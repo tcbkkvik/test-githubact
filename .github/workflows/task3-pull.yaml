@@ -10,6 +10,6 @@ jobs:
       - name: 'ls before pull'
         run: ls
       - name: 'Pull Code'
-        uses: 'action/checkout@v4'
+        uses: 'actions/checkout@v4'
       - name: 'ls after pull'
         run: ls
