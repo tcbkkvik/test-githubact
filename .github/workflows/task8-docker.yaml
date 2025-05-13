@@ -1,0 +1,50 @@
+name: test docker
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    
+  workflow_dispatch:
+
+jobs:
+   test-integration:
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v4
+       - uses: actions/setup-go@v5
+
+       - run: go build -o main
+
+       - name: generate test coverage
+         run: go test ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
+
+       - name: check test coverage
+         uses: vladopajic/go-test-coverage@v2
+         with:
+          profile: cover.out
+          threshold-file: 25
+          threshold-package: 25
+          threshold-total: 25
+
+       - name: Build Docker image
+         run: docker build -t my-go-app .
+
+       - name: Run container in background
+         run: docker run -d -p 8080:8080 --name app my-go-app
+
+       - name: Wait for the app to start
+         run: |
+          for i in {1..10}; do
+            curl --fail http://localhost:8080 && break
+            echo "Waiting for container..." && sleep 1
+          done
+
+       - name: Run test against the container
+         run: |
+           response=$(curl --fail -s http://localhost:8080/hello_world)
+            if [ "$response" != "Hello, World!" ]; then
+             echo "Unexpected response: $response"
+            exit 1
+            fi
+
+ 
