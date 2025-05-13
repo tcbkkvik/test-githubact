@@ -1,0 +1,11 @@
+on:
+  push:
+    branches: "main"
+  workflow_dispatch:
+
+jobs:
+  hello-world:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'hello-github'
+        run: 'echo hello github'
